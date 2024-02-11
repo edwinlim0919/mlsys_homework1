@@ -202,7 +202,7 @@ class MulOp(Op):
     """Op to element-wise multiply two nodes."""
 
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        print('MulOp __call__ START')
+        #print('MulOp __call__ START')
         return Node(
             inputs=[node_A, node_B],
             op=self,
@@ -212,7 +212,7 @@ class MulOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of input values."""
         """TODO: Your code here"""
-        print('MulOp __compute__ START')
+        #print('MulOp compute START')
         if not input_values:
             return np.array([])
 
@@ -238,6 +238,23 @@ class MulByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
+        print('MulByConstOp compute START')
+        const = node.__getattr__('constant')
+        #print('constant: ' + str(const))
+        #result = [array * node.__getattr__('constant') for array in input_values]
+        result = [array * const for array in input_values]
+        #print('result.shape: ' + str(result.shape))
+        #result = [np.multiply(arr, const) for arr in input_values]
+        #if input_values:
+        #    stacked_arr = np.stack(input_values, axis=0)
+        #    result = stacked_arr * const
+        #else:
+        #    result = np.array([])
+        #print('result.shape: ' + str(result.shape))
+        result = np.squeeze(result)
+        #print('result.shape (squeezed): ' + str(result.shape))
+        #print('MulByConstOp compute END')
+        return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of multiplication node, return partial adjoint to the input."""
