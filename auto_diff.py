@@ -352,6 +352,31 @@ class MatMulOp(Op):
         always 2d numpy.ndarray.
         """
         """TODO: Your code here"""
+        if input_values is None or node is None:
+            raise ValueError('input_values or node is None')
+        if len(input_values) != 2:
+            raise ValueError('need 2 matrices')
+
+        #result = input_values[0]
+        A, B = input_values
+        trans_A = node.__getattr__('trans_A')
+        trans_B = node.__getattr__('trans_B')
+        if trans_A:
+            A = A.T
+        if trans_B:
+            B = B.T
+
+        if A.shape[1] != B.shape[0]:
+            raise ValueError('incompatible matrix sizes')
+        result = np.matmul(A, B)
+        return result
+
+        #for matrix in input_values[1:]:
+        #    if result.shape[1] != matrix.shape[0]:
+        #        raise ValueError('Matrix size mismatch')
+        #    result = np.matmul(result, matrix)
+
+        return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of matmul node, return partial adjoint to each input.
