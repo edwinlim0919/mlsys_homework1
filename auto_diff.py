@@ -82,9 +82,7 @@ class Variable(Node):
     """A variable node with given name."""
 
     def __init__(self, name: str) -> None:
-        #print('Variable __init__ (name: ' + name + ') START')
         super().__init__(inputs=[], op=placeholder, name=name)
-        #print('Variable __init__ (name: ' + name + ') END')
 
 
 class Op:
@@ -97,8 +95,6 @@ class Op:
         -------
         The created new node.
         """
-        #print('Op __call__ START')
-        #print('Op __call__ END')
         raise NotImplementedError
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
@@ -118,8 +114,6 @@ class Op:
         output: np.ndarray
             The computed output value of the node.
         """
-        #print('Op __compute__ START')
-        #print('Op __compute__ END')
         raise NotImplementedError
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -202,7 +196,6 @@ class MulOp(Op):
     """Op to element-wise multiply two nodes."""
 
     def __call__(self, node_A: Node, node_B: Node) -> Node:
-        #print('MulOp __call__ START')
         return Node(
             inputs=[node_A, node_B],
             op=self,
@@ -212,10 +205,8 @@ class MulOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of input values."""
         """TODO: Your code here"""
-        #print('MulOp compute START')
         assert len(input_values) == 2
         if not input_values:
-            #return np.array([])
             raise ValueError('None')
 
         result = np.prod(input_values, axis=0)
@@ -240,9 +231,7 @@ class MulByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
-        #assert len(input_values) == 2
         if not input_values or not node:
-            #return np.array([])
             raise ValueError('None')
 
         const = node.__getattr__('constant')
@@ -269,7 +258,6 @@ class DivOp(Op):
         """TODO: Your code here"""
         assert len(input_values) == 2
         if not input_values:
-            #return np.array([])
             raise ValueError('None')
 
         result = input_values[0].astype(float)
@@ -277,7 +265,6 @@ class DivOp(Op):
             with np.errstate(divide='ignore', invalid='ignore'):
                 result = np.divide(result, arr, where=arr!=0)
 
-        #result = np.div(input_values, axis=0)
         return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -299,7 +286,6 @@ class DivByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise division of the input value and the constant."""
         """TODO: Your code here"""
-        #assert len(input_values) == 2
         if not input_values or not node:
             raise ValueError('None')
 
@@ -365,7 +351,6 @@ class MatMulOp(Op):
         if len(input_values) != 2:
             raise ValueError('need 2 matrices')
 
-        #result = input_values[0]
         A, B = input_values
         trans_A = node.__getattr__('trans_A')
         trans_B = node.__getattr__('trans_B')
@@ -377,13 +362,6 @@ class MatMulOp(Op):
         if A.shape[1] != B.shape[0]:
             raise ValueError('incompatible matrix sizes')
         result = np.matmul(A, B)
-        return result
-
-        #for matrix in input_values[1:]:
-        #    if result.shape[1] != matrix.shape[0]:
-        #        raise ValueError('Matrix size mismatch')
-        #    result = np.matmul(result, matrix)
-
         return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -457,7 +435,9 @@ class Evaluator:
         eval_nodes: List[Node]
             The list of nodes whose values are to be computed.
         """
+        #print('Evaluator __init__ START')
         self.eval_nodes = eval_nodes
+        #print('Evaluator __init__ END')
 
     def run(self, input_values: Dict[Node, np.ndarray]) -> List[np.ndarray]:
         """Computes values of nodes in `eval_nodes` field with
@@ -477,6 +457,38 @@ class Evaluator:
             The list of values for nodes in `eval_nodes` field.
         """
         """TODO: Your code here"""
+        print('Evaluator run START')
+
+        result = []
+        # Construct the topological sort
+        for node in self.eval_nodes:
+            node_found = True
+            for key, val in input_values.items():
+                print('key: ' + str(key))
+                print('val: ' + str(val))
+                if str(key) == str(node):
+                    node_found = True
+                    #node.inputs = val
+
+                    print('key node: ' + str(key))
+                    print('inputs: ' + str(node.inputs))
+                    print('op: ' + str(node.op))
+                    print('attrs: ' + str(node.attrs))
+                    print('name: ' + str(node.name))
+                    print('input_values: ' + str(input_values))
+
+            if not node_found:
+                raise ValueError('node not found')
+
+            print('self.eval_nodes node: ' + str(node))
+            print('inputs: ' + str(node.inputs))
+            print('op: ' + str(node.op))
+            print('attrs: ' + str(node.attrs))
+            print('name: ' + str(node.name))
+            print('input_values: ' + str(input_values))
+
+        print('Evaluator run END')
+        return result
 
 
 def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
