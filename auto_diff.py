@@ -474,6 +474,7 @@ class Evaluator:
             print('name: ' + str(key.name))
             print()
 
+        results = []
         for node in self.eval_nodes:
             print('self.eval_nodes node: ' + str(node))
             print('type(node): ' + str(type(node)))
@@ -495,14 +496,14 @@ class Evaluator:
             print('curr_inputs: ' + str(curr_inputs))
             print('node.op: ' + str(node.op))
             print('type(node.op): ' + str(type(node.op)))
-            result = node.op.compute(node, curr_inputs)
-            print('FUCKYOU RESULT: ' + str(result))
-            print('FUCKYOU type(RESULT): ' + str(type(result)))
-            print('!!!I AM ALIVE!!!')
+            results.append(node.op.compute(node, curr_inputs))
+            #print('FUCKYOU RESULT: ' + str(result))
+            #print('FUCKYOU type(RESULT): ' + str(type(result)))
+            #print('!!!I AM ALIVE!!!')
             print()
 
         print('Evaluator run END')
-        return result
+        return results
 
 
 def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
