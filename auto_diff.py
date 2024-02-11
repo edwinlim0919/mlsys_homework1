@@ -82,9 +82,9 @@ class Variable(Node):
     """A variable node with given name."""
 
     def __init__(self, name: str) -> None:
-        print('Variable __init__ (name: ' + name + ') START')
+        #print('Variable __init__ (name: ' + name + ') START')
         super().__init__(inputs=[], op=placeholder, name=name)
-        print('Variable __init__ (name: ' + name + ') END')
+        #print('Variable __init__ (name: ' + name + ') END')
 
 
 class Op:
@@ -97,9 +97,9 @@ class Op:
         -------
         The created new node.
         """
-        print('Op __call__ START')
-        print('Op __call__ END')
-        #raise NotImplementedError
+        #print('Op __call__ START')
+        #print('Op __call__ END')
+        raise NotImplementedError
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Compute the output value of the given node with its input
@@ -118,9 +118,9 @@ class Op:
         output: np.ndarray
             The computed output value of the node.
         """
-        print('Op __compute__ START')
-        print('Op __compute__ END')
-        #raise NotImplementedError
+        #print('Op __compute__ START')
+        #print('Op __compute__ END')
+        raise NotImplementedError
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given a node and its output gradient node, compute partial
@@ -238,6 +238,9 @@ class MulByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
+        if not input_values or not node:
+            return np.array([])
+
         const = node.__getattr__('constant')
         result = np.squeeze([array * const for array in input_values])
         return result
@@ -260,6 +263,16 @@ class DivOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise division of input values."""
         """TODO: Your code here"""
+        if not input_values:
+            return np.array([])
+
+        result = input_values[0].astype(float)
+        for arr in input_values[1:]:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                result = np.divide(result, arr, where=arr!=0)
+
+        #result = np.div(input_values, axis=0)
+        return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of division node, return partial adjoint to each input."""
@@ -280,6 +293,18 @@ class DivByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise division of the input value and the constant."""
         """TODO: Your code here"""
+        if not input_values or not node:
+            return np.array([])
+
+        const = float(node.__getattr__('constant'))
+        stacked_inputs = np.stack(input_values, axis=0)
+        if const != 0.0:
+            result = np.squeeze(stacked_inputs / const)
+        else:
+            return np.array([])
+
+        return result
+
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of division node, return partial adjoint to the input."""
