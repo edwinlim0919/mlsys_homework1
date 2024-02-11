@@ -82,7 +82,9 @@ class Variable(Node):
     """A variable node with given name."""
 
     def __init__(self, name: str) -> None:
+        print('Variable __init__ (name: ' + name + ') START')
         super().__init__(inputs=[], op=placeholder, name=name)
+        print('Variable __init__ (name: ' + name + ') END')
 
 
 class Op:
@@ -95,7 +97,9 @@ class Op:
         -------
         The created new node.
         """
-        raise NotImplementedError
+        print('Op __call__ START')
+        print('Op __call__ END')
+        #raise NotImplementedError
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Compute the output value of the given node with its input
@@ -114,7 +118,9 @@ class Op:
         output: np.ndarray
             The computed output value of the node.
         """
-        raise NotImplementedError
+        print('Op __compute__ START')
+        print('Op __compute__ END')
+        #raise NotImplementedError
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given a node and its output gradient node, compute partial
@@ -196,6 +202,7 @@ class MulOp(Op):
     """Op to element-wise multiply two nodes."""
 
     def __call__(self, node_A: Node, node_B: Node) -> Node:
+        print('MulOp __call__ START')
         return Node(
             inputs=[node_A, node_B],
             op=self,
@@ -205,6 +212,12 @@ class MulOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of input values."""
         """TODO: Your code here"""
+        print('MulOp __compute__ START')
+        if not input_values:
+            return np.array([])
+
+        result = np.prod(input_values, axis=0)
+        return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of multiplication node, return partial adjoint to each input."""
