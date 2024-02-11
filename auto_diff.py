@@ -213,6 +213,7 @@ class MulOp(Op):
         """Return the element-wise multiplication of input values."""
         """TODO: Your code here"""
         #print('MulOp compute START')
+        assert len(input_values) == 2
         if not input_values:
             #return np.array([])
             raise ValueError('None')
@@ -239,6 +240,7 @@ class MulByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
+        #assert len(input_values) == 2
         if not input_values or not node:
             #return np.array([])
             raise ValueError('None')
@@ -265,6 +267,7 @@ class DivOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise division of input values."""
         """TODO: Your code here"""
+        assert len(input_values) == 2
         if not input_values:
             #return np.array([])
             raise ValueError('None')
@@ -296,6 +299,7 @@ class DivByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise division of the input value and the constant."""
         """TODO: Your code here"""
+        #assert len(input_values) == 2
         if not input_values or not node:
             raise ValueError('None')
 
@@ -355,6 +359,7 @@ class MatMulOp(Op):
         always 2d numpy.ndarray.
         """
         """TODO: Your code here"""
+        assert len(input_values) == 2
         if input_values is None or node is None:
             raise ValueError('input_values or node is None')
         if len(input_values) != 2:
