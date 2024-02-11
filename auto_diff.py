@@ -163,7 +163,9 @@ class AddOp(Op):
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise addition of input values."""
+        print('AddOp compute FUCKYOU START')
         assert len(input_values) == 2
+        print('AddOp compute FUCKYOU END')
         return input_values[0] + input_values[1]
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -457,35 +459,52 @@ class Evaluator:
             The list of values for nodes in `eval_nodes` field.
         """
         """TODO: Your code here"""
+        # TODO: Might have to consider whether input_values comes in DAG order
         print('Evaluator run START')
 
         result = []
-        # Construct the topological sort
+        for key, val in input_values.items():
+            print('key: ' + str(key))
+            print('val: ' + str(val))
+            print('key node: ' + str(key))
+            print('type(node): ' + str(type(key)))
+            print('inputs: ' + str(key.inputs))
+            print('op: ' + str(key.op))
+            print('attrs: ' + str(key.attrs))
+            print('name: ' + str(key.name))
+            print()
+
         for node in self.eval_nodes:
-            node_found = True
-            for key, val in input_values.items():
-                print('key: ' + str(key))
-                print('val: ' + str(val))
-                if str(key) == str(node):
-                    node_found = True
-                    #node.inputs = val
-
-                    print('key node: ' + str(key))
-                    print('inputs: ' + str(node.inputs))
-                    print('op: ' + str(node.op))
-                    print('attrs: ' + str(node.attrs))
-                    print('name: ' + str(node.name))
-                    print('input_values: ' + str(input_values))
-
-            if not node_found:
-                raise ValueError('node not found')
-
             print('self.eval_nodes node: ' + str(node))
+            print('type(node): ' + str(type(node)))
             print('inputs: ' + str(node.inputs))
             print('op: ' + str(node.op))
             print('attrs: ' + str(node.attrs))
             print('name: ' + str(node.name))
-            print('input_values: ' + str(input_values))
+            curr_inputs = []
+            for inp in node.inputs:
+                inp_found = False
+
+                for key, val in input_values.items():
+                    if str(key) == str(inp):
+                        inp_found = True
+                        curr_inputs.append(key)
+
+                if not inp_found:
+                    raise ValueError('input missing')
+            print('curr_inputs: ' + str(curr_inputs))
+            print('node.op: ' + str(node.op))
+            print('type(node.op): ' + str(type(node.op)))
+            #print('node: ' + str(node))
+            #print('type(node): ' + str(node))
+            #print('node.compute: ' + str(node.compute))
+            #print('type(node.compute): ' + str(type(node.compute)))
+            #result = add(node, curr_inputs)
+            fuckyou = curr_inputs[0] + curr_inputs[1]
+            print('FUCK YOU: ' + str(fuckyou))
+            print('type(FUCK YOU): ' + str(type(fuckyou)))
+            print('!!!I AM ALIVE!!!')
+            print()
 
         print('Evaluator run END')
         return result
