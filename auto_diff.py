@@ -163,9 +163,9 @@ class AddOp(Op):
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise addition of input values."""
-        print('AddOp compute FUCKYOU START')
+        #print('AddOp compute FUCKYOU START')
         assert len(input_values) == 2
-        print('AddOp compute FUCKYOU END')
+        #print('AddOp compute FUCKYOU END')
         return input_values[0] + input_values[1]
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -462,7 +462,7 @@ class Evaluator:
         # TODO: Might have to consider whether input_values comes in DAG order
         print('Evaluator run START')
 
-        result = []
+        #result = []
         for key, val in input_values.items():
             print('key: ' + str(key))
             print('val: ' + str(val))
@@ -488,21 +488,16 @@ class Evaluator:
                 for key, val in input_values.items():
                     if str(key) == str(inp):
                         inp_found = True
-                        curr_inputs.append(key)
+                        curr_inputs.append(val)
 
                 if not inp_found:
                     raise ValueError('input missing')
             print('curr_inputs: ' + str(curr_inputs))
             print('node.op: ' + str(node.op))
             print('type(node.op): ' + str(type(node.op)))
-            #print('node: ' + str(node))
-            #print('type(node): ' + str(node))
-            #print('node.compute: ' + str(node.compute))
-            #print('type(node.compute): ' + str(type(node.compute)))
-            #result = add(node, curr_inputs)
-            fuckyou = curr_inputs[0] + curr_inputs[1]
-            print('FUCK YOU: ' + str(fuckyou))
-            print('type(FUCK YOU): ' + str(type(fuckyou)))
+            result = node.op.compute(node, curr_inputs)
+            print('FUCKYOU RESULT: ' + str(result))
+            print('FUCKYOU type(RESULT): ' + str(type(result)))
             print('!!!I AM ALIVE!!!')
             print()
 
