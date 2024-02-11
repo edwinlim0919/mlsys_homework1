@@ -214,7 +214,8 @@ class MulOp(Op):
         """TODO: Your code here"""
         #print('MulOp compute START')
         if not input_values:
-            return np.array([])
+            #return np.array([])
+            raise ValueError('None')
 
         result = np.prod(input_values, axis=0)
         return result
@@ -239,7 +240,8 @@ class MulByConstOp(Op):
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
         if not input_values or not node:
-            return np.array([])
+            #return np.array([])
+            raise ValueError('None')
 
         const = node.__getattr__('constant')
         result = np.squeeze([array * const for array in input_values])
@@ -264,7 +266,8 @@ class DivOp(Op):
         """Return the element-wise division of input values."""
         """TODO: Your code here"""
         if not input_values:
-            return np.array([])
+            #return np.array([])
+            raise ValueError('None')
 
         result = input_values[0].astype(float)
         for arr in input_values[1:]:
@@ -294,7 +297,7 @@ class DivByConstOp(Op):
         """Return the element-wise division of the input value and the constant."""
         """TODO: Your code here"""
         if not input_values or not node:
-            return np.array([])
+            raise ValueError('None')
 
         const = float(node.__getattr__('constant'))
         stacked_inputs = np.stack(input_values, axis=0)
