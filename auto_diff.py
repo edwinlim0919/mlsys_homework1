@@ -238,22 +238,8 @@ class MulByConstOp(Op):
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise multiplication of the input value and the constant."""
         """TODO: Your code here"""
-        print('MulByConstOp compute START')
         const = node.__getattr__('constant')
-        #print('constant: ' + str(const))
-        #result = [array * node.__getattr__('constant') for array in input_values]
-        result = [array * const for array in input_values]
-        #print('result.shape: ' + str(result.shape))
-        #result = [np.multiply(arr, const) for arr in input_values]
-        #if input_values:
-        #    stacked_arr = np.stack(input_values, axis=0)
-        #    result = stacked_arr * const
-        #else:
-        #    result = np.array([])
-        #print('result.shape: ' + str(result.shape))
-        result = np.squeeze(result)
-        #print('result.shape (squeezed): ' + str(result.shape))
-        #print('MulByConstOp compute END')
+        result = np.squeeze([array * const for array in input_values])
         return result
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
