@@ -437,9 +437,48 @@ class Evaluator:
         eval_nodes: List[Node]
             The list of nodes whose values are to be computed.
         """
-        #print('Evaluator __init__ START')
         self.eval_nodes = eval_nodes
-        #print('Evaluator __init__ END')
+
+    def get_topological_sort(self, input_values: Dict[Node, np.ndarray], curr_eval_nodes: List[Node]) -> List[Node]:
+        print('GET_TOPOLOGICAL_SORT START')
+        print('CURR_EVAL_NODES: ' + str(curr_eval_nodes))
+        if not curr_eval_nodes:
+            return []
+        
+        input_value_names = []
+        for key, val in input_values.items():
+            input_value_names.append(str(key))
+
+        # Topological sort
+        eval_nodes_new = []
+        #result_node = self.eval_nodes[0]
+        #result_node_inputs = result_node.inputs
+        result_node = curr_eval_nodes[0]
+        result_node_inputs = result_node.inputs
+        for node_input in result_node_inputs:
+            if str(node_input) in input_value_names:
+                eval_nodes_new.append(node_input)
+            else:
+                node_input_nonleaf = node_input.inputs[0]
+                print('OUT: ' + str(node_input_nonleaf))
+                print('TYPE: ' + str(type(node_input_nonleaf)))
+                print('key: ' + str(node_input_nonleaf))
+                print('key node: ' + str(node_input_nonleaf))
+                print('inputs: ' + str(node_input_nonleaf.inputs))
+                print('op: ' + str(node_input_nonleaf.op))
+                print('attrs: ' + str(node_input_nonleaf.attrs))
+                print('name: ' + str(node_input_nonleaf.name))
+                print('input_values: ' + str(input_values))
+                print()
+                for child_node in node_input_nonleaf.inputs:
+                    # Remove any added nodes
+                    new_curr_eval_nodes = [child_node]
+                    eval_nodes_new = eval_nodes_new + self.get_topological_sort(input_values, new_curr_eval_nodes)
+                    #eval_nodes_new = eval_nodes_new + self.get_topological_sort(input_values, curr_eval_nodes[1:])
+
+        print('GET_TOPOLOGICAL_SORT END')
+        print()
+        return eval_nodes_new
 
     def run(self, input_values: Dict[Node, np.ndarray]) -> List[np.ndarray]:
         """Computes values of nodes in `eval_nodes` field with
@@ -459,7 +498,10 @@ class Evaluator:
             The list of values for nodes in `eval_nodes` field.
         """
         """TODO: Your code here"""
-        # TODO: Might have to consider whether input_values comes in DAG order
+
+        topological_sort = self.get_topological_sort(input_values, self.eval_nodes)
+        print('TOPOLOGICAL_SORT: ' + str(topological_sort))
+
         print('Evaluator run START')
         for key, val in input_values.items():
             print('key: ' + str(key))
@@ -471,6 +513,7 @@ class Evaluator:
             print('attrs: ' + str(key.attrs))
             print('name: ' + str(key.name))
             print()
+        print('KEY OVERVIEW STOP')
 
         results = []
         for node in self.eval_nodes:
@@ -480,7 +523,9 @@ class Evaluator:
             print('op: ' + str(node.op))
             print('attrs: ' + str(node.attrs))
             print('name: ' + str(node.name))
+            print()
 
+            # check identity
             if not node.inputs:
                 for key, val in input_values.items():
                     results.append(val)
@@ -491,20 +536,24 @@ class Evaluator:
                 inp_found = False
 
                 for key, val in input_values.items():
+                    print('key: ' + str(key))
+                    print('val: ' + str(val))
+                    print('key node: ' + str(key))
+                    print('type(node): ' + str(type(key)))
+                    print('inputs: ' + str(key.inputs))
+                    print('op: ' + str(key.op))
+                    print('attrs: ' + str(key.attrs))
+                    print('name: ' + str(key.name))
+                    print()
+
                     if str(key) == str(inp):
                         inp_found = True
                         curr_inputs.append(val)
 
                 if not inp_found:
                     raise ValueError('input missing')
-            print('curr_inputs: ' + str(curr_inputs))
-            print('node.op: ' + str(node.op))
-            print('type(node.op): ' + str(type(node.op)))
+
             results.append(node.op.compute(node, curr_inputs))
-            #print('FUCKYOU RESULT: ' + str(result))
-            #print('FUCKYOU type(RESULT): ' + str(type(result)))
-            #print('!!!I AM ALIVE!!!')
-            print()
 
         print('Evaluator run END')
         return results
