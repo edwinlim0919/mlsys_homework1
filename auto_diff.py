@@ -461,8 +461,6 @@ class Evaluator:
         """TODO: Your code here"""
         # TODO: Might have to consider whether input_values comes in DAG order
         print('Evaluator run START')
-
-        #result = []
         for key, val in input_values.items():
             print('key: ' + str(key))
             print('val: ' + str(val))
@@ -482,6 +480,12 @@ class Evaluator:
             print('op: ' + str(node.op))
             print('attrs: ' + str(node.attrs))
             print('name: ' + str(node.name))
+
+            if not node.inputs:
+                for key, val in input_values.items():
+                    results.append(val)
+                    return results
+
             curr_inputs = []
             for inp in node.inputs:
                 inp_found = False
