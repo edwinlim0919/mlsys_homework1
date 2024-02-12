@@ -256,6 +256,9 @@ class MulByConstOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of multiplication node, return partial adjoint to the input."""
         """TODO: Your code here"""
+        const = node.__getattr__('constant')
+        return [output_grad * const]
+
 
 
 class DivOp(Op):
@@ -320,6 +323,8 @@ class DivByConstOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of division node, return partial adjoint to the input."""
         """TODO: Your code here"""
+        const = float(node.__getattr__('constant'))
+        return [output_grad / const]
 
 
 class MatMulOp(Op):
