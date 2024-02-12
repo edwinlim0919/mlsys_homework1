@@ -440,33 +440,31 @@ class Evaluator:
         self.eval_nodes = eval_nodes
 
     def get_topological_sort(self, input_values: Dict[Node, np.ndarray], curr_eval_node: Node) -> List[Node]:
-        print('GET_TOPOLOGICAL_SORT START')
-        print('curr_eval_node: ' + str(curr_eval_node))
-
         if not curr_eval_node.inputs:
             return [curr_eval_node]
+        print('GTS curr_eval_node: ' + str(curr_eval_node))
 
         input_value_names = []
         for key, val in input_values.items():
             input_value_names.append(str(key))
 
-        # Topological sort
-        eval_nodes_new_lhs = []
-        eval_nodes_new_rhs = []
+        #eval_nodes_new_lhs = []
+        #eval_nodes_new_rhs = []
+        curr_topo_list = []
         curr_eval_node_inputs = curr_eval_node.inputs
         for node_input in curr_eval_node_inputs:
-            if str(node_input) in input_value_names:
-                print('NODE_INPUT (LEAF): ' + str(node_input))
-                eval_nodes_new_lhs.append(node_input)
-            else:
-                print('NODE_INPUT (NONLEAF): ' + str(node_input))
-                for child_node in node_input.inputs:
-                    eval_nodes_new_rhs = eval_nodes_new_rhs + self.get_topological_sort(input_values, child_node)
-                #eval_nodes_new_rhs.append(node_input)
+            print('GTS node_input: ' + str(node_input))
+            curr_topo_list = curr_topo_list + self.get_topological_sort(input_values, node_input)
+        curr_topo_list.append(curr_eval_node)
 
-        print('GET_TOPOLOGICAL_SORT END')
-        print()
-        return eval_nodes_new_lhs + eval_nodes_new_rhs + [curr_eval_node]
+        #    if str(node_input) in input_value_names:
+        #        eval_nodes_new_lhs.append(node_input)
+        #    else:
+        #        for child_node in node_input.inputs:
+        #            eval_nodes_new_rhs = eval_nodes_new_rhs + self.get_topological_sort(input_values, child_node)
+
+        #return eval_nodes_new_lhs + eval_nodes_new_rhs + [curr_eval_node]
+        return curr_topo_list
 
     def run(self, input_values: Dict[Node, np.ndarray]) -> List[np.ndarray]:
         """Computes values of nodes in `eval_nodes` field with
@@ -487,10 +485,12 @@ class Evaluator:
         """
         """TODO: Your code here"""
 
-        topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
-        print('TOPOLOGICAL_SORT: ' + str(topological_sort))
-
         print('Evaluator run START')
+        print('self.eval_nodes: ' + str(self.eval_nodes))
+        topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
+        print('TOPOLOGICAL_SORT: ' + str(topological_sort) + '\n')
+
+        print('KEY OVERVIEW START')
         for key, val in input_values.items():
             print('key: ' + str(key))
             print('val: ' + str(val))
@@ -503,48 +503,71 @@ class Evaluator:
             print()
         print('KEY OVERVIEW STOP')
 
+        #results = self.run_recurse(input_values, topological_sort, topological_sort[-1])
         results = []
-        for node in self.eval_nodes:
-            print('self.eval_nodes node: ' + str(node))
-            print('type(node): ' + str(type(node)))
-            print('inputs: ' + str(node.inputs))
-            print('op: ' + str(node.op))
-            print('attrs: ' + str(node.attrs))
-            print('name: ' + str(node.name))
-            print()
+        #for node in topological_sort:
+        #    # check identity
+        #    if not node.inputs:
+        #        for key, val in input_values.items():
+        #            results.append(val)
+        #            return results
 
-            # check identity
-            if not node.inputs:
-                for key, val in input_values.items():
-                    results.append(val)
-                    return results
+        #    curr_inputs = []
+        #    for inp in node.inputs:
+        #        inp_found = False
 
-            curr_inputs = []
-            for inp in node.inputs:
-                inp_found = False
+        #        for key, val in input_values.items():
+        #            if str(key) == str(inp):
+        #                inp_found = True
+        #                curr_inputs.append(val)
 
-                for key, val in input_values.items():
-                    print('key: ' + str(key))
-                    print('val: ' + str(val))
-                    print('key node: ' + str(key))
-                    print('type(node): ' + str(type(key)))
-                    print('inputs: ' + str(key.inputs))
-                    print('op: ' + str(key.op))
-                    print('attrs: ' + str(key.attrs))
-                    print('name: ' + str(key.name))
-                    print()
+        #        if not inp_found:
+        #            raise ValueError('input missing')
 
-                    if str(key) == str(inp):
-                        inp_found = True
-                        curr_inputs.append(val)
-
-                if not inp_found:
-                    raise ValueError('input missing')
-
-            results.append(node.op.compute(node, curr_inputs))
-
+        #    results.append(node.op.compute(node, curr_inputs))
         print('Evaluator run END')
+
+        # TODO: check if all inputs have been found
+
         return results
+
+    def run_recurse(self, input_values: Dict[Node, np.ndarray], topological_sort: List[Node], curr_node: Node) -> List[np.ndarray]:
+        results = []
+        #curr_node = topological_sort[-1]
+
+        print('RUN_RECURSE START')
+        print('CURR_NODE: ' + str(curr_node))
+        print('CURR_NODE.INPUTS: ' + str(curr_node.inputs))
+
+        # identity base case
+        if not curr_node.inputs:
+            for key, val in input_values.items():
+                results.append(val)
+            return results
+
+        assert(len(curr_node.inputs) == 2)
+        lhs_inp = curr_node.inputs[0]
+        rhs_inp = curr_node.inputs[1]
+        print('topological_sort: ' + str(topological_sort))
+        print('lhs_inp: ' + str(lhs_inp))
+        print('rhs_inp: ' + str(rhs_inp))
+
+        # Remove curr_node from topological sort
+        #new_topo_both = topological_sort[:-1]
+
+        lhs_res = self.run_recurse(input_values, topological_sort, lhs_inp)
+        rhs_res = self.run_recurse(input_values, topological_sort, rhs_inp)
+
+        #return
+
+        #return node.op.compute
+        #lhs_res = self.run_recurse(input_values, topological_sort[])
+        #for inp in curr_node.inputs:
+            #print('RUN_RECURSE INP: ' + str(inp))
+
+        print('RUN_RECURSE END')
+        #return results
+        return curr_node.op.compute(curr_node, lhs_res+rhs_res)
 
 
 def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
