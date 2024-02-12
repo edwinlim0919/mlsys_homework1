@@ -285,6 +285,9 @@ class DivOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of division node, return partial adjoint to each input."""
         """TODO: Your code here"""
+        #return [output_grad/node.inputs[1], output_grad/node.inputs[0]]
+        return [output_grad/node.inputs[1], (-1 * node.inputs[0] / (node.inputs[1] * node.inputs[1])) * output_grad]
+
 
 
 class DivByConstOp(Op):
@@ -486,17 +489,6 @@ class Evaluator:
             The list of values for nodes in `eval_nodes` field.
         """
         """TODO: Your code here"""
-
-        print('RUN GRADIENT START')
-        for key, val in input_values.items():
-            print('key: ' + str(key))
-            print('val: ' + str(val))
-        print()
-        print('len(self.eval_nodes): ' + str(len(self.eval_nodes)))
-        for node in self.eval_nodes:
-            print('node: ' + str(node))
-        print()
-        print('RUN GRADIENT END')
 
         for key, val in input_values.items():
             if not val.size > 0:
