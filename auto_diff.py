@@ -410,49 +410,6 @@ class MatMulOp(Op):
         trans_A = node.__getattr__('trans_A')
         trans_B = node.__getattr__('trans_B')
 
-        #if not trans_A and not trans_B:
-            #grad_A = self.__call__(B, output_grad, True, True)
-            #grad_B = self.__call__(output_grad, A, True, True)
-
-            #grad_A = self.__call__(B, output_grad, False, False)
-            #grad_B = self.__call__(output_grad, A, False, False)
-
-            #grad_A = self.__call__(B, output_grad, True, False)
-            #grad_B = self.__call__(output_grad, A, True, False)
-
-            #grad_A = self.__call__(B, output_grad, False, True)
-            #grad_B = self.__call__(output_grad, A, False, True)
-
-            #grad_A = self.__call__(B, output_grad, True, True)
-            #grad_B = self.__call__(output_grad, A, False, False)
-
-            #grad_A = self.__call__(B, output_grad, False, False)
-            #grad_B = self.__call__(output_grad, A, True, True)
-
-            #grad_A = self.__call__(B, output_grad, True, False)
-            #grad_B = self.__call__(output_grad, A, False, False)
-
-            #grad_A = self.__call__(B, output_grad, False, True)
-            #grad_B = self.__call__(output_grad, A, False, False)
-
-            #grad_A = self.__call__(B, output_grad, False, False)
-            #grad_B = self.__call__(output_grad, A, True, False)
-
-            #grad_A = self.__call__(B, output_grad, False, False)
-            #grad_B = self.__call__(output_grad, A, False, True)
-
-            #grad_A = self.__call__(B, output_grad, False, True)
-            #grad_B = self.__call__(output_grad, A, True, True)
-
-            #grad_A = self.__call__(B, output_grad, True, False)
-            #grad_B = self.__call__(output_grad, A, True, True)
-
-            #grad_A = self.__call__(B, output_grad, True, True)
-            #grad_B = self.__call__(output_grad, A, False, True)
-
-            #grad_A = self.__call__(B, output_grad, True, True)
-            #grad_B = self.__call__(output_grad, A, True, False)
-
         if not trans_A and not trans_B:
             grad_A = self.__call__(output_grad, B, False, True)
             grad_B = self.__call__(A, output_grad, True, False)
