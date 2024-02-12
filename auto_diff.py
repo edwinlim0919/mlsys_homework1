@@ -475,35 +475,24 @@ class Evaluator:
         """
         """TODO: Your code here"""
 
-        print('Evaluator run START')
-        print('self.eval_nodes: ' + str(self.eval_nodes))
+        for key, val in input_values.items():
+            if not val.any():
+                raise ValueError('input node value not given')
+
         topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
-        print('TOPOLOGICAL_SORT: ' + str(topological_sort) + '\n')
 
         for curr_node in topological_sort:
-            print('RUN CURR_NODE: ' + str(curr_node))
-            print('inputs: ' + str(curr_node.inputs))
-            print('op: ' + str(curr_node.op))
-            print('attrs: ' + str(curr_node.attrs))
-
             if curr_node.inputs:
-                print('INPUT_VALUES: ' + str(input_values))
                 curr_node_input_vals = []
                 for curr_node_inp in curr_node.inputs:
                     for key, val in input_values.items():
                         if str(curr_node_inp) == str(key):
-                            print('curr_node_input_vals append val: ' + str(val))
                             if type(val) == list:
                                 curr_node_input_vals = curr_node_input_vals + val
                             else:
                                 curr_node_input_vals.append(val)
                 curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
                 input_values[curr_node] = curr_res
-
-            print()
-
-
-        print('Evaluator run END')
 
         # TODO: check if all inputs have been found
 
