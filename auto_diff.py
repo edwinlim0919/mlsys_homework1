@@ -216,13 +216,20 @@ class MulOp(Op):
         """Given gradient of multiplication node, return partial adjoint to each input."""
         """TODO: Your code here"""
         print('node: ' + str(node))
+        print('inputs: ' + str(node.inputs))
+        for inp in node.inputs:
+            print('INP: ' + str(inp))
+            print('type(INP): ' + str(type(inp)))
+        print('op: ' + str(node.op))
+        print('attrs: ' + str(node.attrs))
+
         print('output_grad: ' + str(output_grad))
         print('type(output_grad): ' + str(type(output_grad)))
         print('output_grad.inputs: ' + str(output_grad.inputs))
         print('output_grad.op: ' + str(output_grad.op))
         print('output_grad.attrs: ' + str(output_grad.attrs))
-        #return [output_grad, output_grad]
-        return []
+        print()
+        return [output_grad*node.inputs[1], output_grad*node.inputs[0]]
 
 
 class MulByConstOp(Op):
@@ -480,26 +487,45 @@ class Evaluator:
         """
         """TODO: Your code here"""
 
+        print('RUN GRADIENT START')
+        for key, val in input_values.items():
+            print('key: ' + str(key))
+            print('val: ' + str(val))
+        print()
+        print('len(self.eval_nodes): ' + str(len(self.eval_nodes)))
+        for node in self.eval_nodes:
+            print('node: ' + str(node))
+        print()
+        print('RUN GRADIENT END')
+
         for key, val in input_values.items():
             if not val.size > 0:
                 raise ValueError('input node value not given')
 
-        topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
+        results_all_eval_nodes = []
+        for i in range(len(self.eval_nodes)):
+            curr_eval_nodes = self.eval_nodes[i]
+            topological_sort = self.get_topological_sort(input_values, curr_eval_nodes)
 
-        for curr_node in topological_sort:
-            if curr_node.inputs:
-                curr_node_input_vals = []
-                for curr_node_inp in curr_node.inputs:
-                    for key, val in input_values.items():
-                        if str(curr_node_inp) == str(key):
-                            if type(val) == list:
-                                curr_node_input_vals = curr_node_input_vals + val
-                            else:
-                                curr_node_input_vals.append(val)
-                curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
-                input_values[curr_node] = curr_res
+            for curr_node in topological_sort:
+                if curr_node.inputs:
+                    curr_node_input_vals = []
+                    for curr_node_inp in curr_node.inputs:
+                        for key, val in input_values.items():
+                            if str(curr_node_inp) == str(key):
+                                if type(val) == list:
+                                    curr_node_input_vals = curr_node_input_vals + val
+                                else:
+                                    curr_node_input_vals.append(val)
+                    curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
+                    input_values[curr_node] = curr_res
 
-        return [input_values[self.eval_nodes[0]]]
+            results_all_eval_nodes.append(input_values[curr_eval_nodes])
+
+        #return [input_values[curr_eval_nodes]]
+        #if len(results_all_eval_nodes) == 1:
+        #    return results_all_eval_nodes[0]
+        return results_all_eval_nodes
 
 def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
     """Construct the backward computational graph, which takes gradient
