@@ -215,20 +215,6 @@ class MulOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of multiplication node, return partial adjoint to each input."""
         """TODO: Your code here"""
-        print('node: ' + str(node))
-        print('inputs: ' + str(node.inputs))
-        for inp in node.inputs:
-            print('INP: ' + str(inp))
-            print('type(INP): ' + str(type(inp)))
-        print('op: ' + str(node.op))
-        print('attrs: ' + str(node.attrs))
-
-        print('output_grad: ' + str(output_grad))
-        print('type(output_grad): ' + str(type(output_grad)))
-        print('output_grad.inputs: ' + str(output_grad.inputs))
-        print('output_grad.op: ' + str(output_grad.op))
-        print('output_grad.attrs: ' + str(output_grad.attrs))
-        print()
         return [output_grad*node.inputs[1], output_grad*node.inputs[0]]
 
 
@@ -382,7 +368,12 @@ class MatMulOp(Op):
         if trans_B:
             B = B.T
 
+        print('A: ' + str(A))
+        print('B: ' + str(B))
+
         if A.shape[1] != B.shape[0]:
+            print('A.shape: ' + str(A.shape))
+            print('B.shape: ' + str(B.shape))
             raise ValueError('incompatible matrix sizes')
         result = np.matmul(A, B)
         return result
@@ -399,6 +390,75 @@ class MatMulOp(Op):
         - You may want to look up some materials for the gradients of matmul.
         """
         """TODO: Your code here"""
+        print('node: ' + str(node))
+        print('inputs: ' + str(node.inputs))
+        for inp in node.inputs:
+            print('INP: ' + str(inp))
+            print('inputs: ' + str(inp.inputs))
+            print('op: ' + str(inp.op))
+            print('attrs: ' + str(inp.attrs))
+        #print('type(node.inputs[0]): '  + str(type(node.inputs[0])))
+        print()
+        print('output_grad: ' + str(output_grad))
+        print('type(output_grad): ' + str(type(output_grad)))
+        print('inputs: ' + str(output_grad.inputs))
+        print('op: ' + str(output_grad.op))
+        print('attrs: ' + str(output_grad.attrs))
+        print()
+
+        A, B = node.inputs
+        #trans_X1 = X1.__getattr__('')
+       
+        trans_A = node.__getattr__('trans_A')
+        trans_B = node.__getattr__('trans_B')
+
+        if not trans_A and not trans_B:
+            grad_A = self.__call__(B, output_grad, True, True)
+            grad_B = self.__call__(output_grad, A, True, True)
+
+            grad_A = self.__call__(B, output_grad, False, False)
+            grad_B = self.__call__(output_grad, A, False, False)
+
+            grad_A = self.__call__(B, output_grad, True, False)
+            grad_B = self.__call__(output_grad, A, True, False)
+
+            grad_A = self.__call__(B, output_grad, False, True)
+            grad_B = self.__call__(output_grad, A, False, True)
+
+            grad_A = self.__call__(B, output_grad, True, True)
+            grad_B = self.__call__(output_grad, A, False, False)
+
+            grad_A = self.__call__(B, output_grad, False, False)
+            grad_B = self.__call__(output_grad, A, True, True)
+
+            grad_A = self.__call__(B, output_grad, True, False)
+            grad_B = self.__call__(output_grad, A, False, False)
+
+            grad_A = self.__call__(B, output_grad, False, True)
+            grad_B = self.__call__(output_grad, A, False, False)
+
+            grad_A = self.__call__(B, output_grad, False, False)
+            grad_B = self.__call__(output_grad, A, True, False)
+
+            grad_A = self.__call__(B, output_grad, False, False)
+            grad_B = self.__call__(output_grad, A, False, True)
+
+            grad_A = self.__call__(B, output_grad, False, True)
+            grad_B = self.__call__(output_grad, A, True, True)
+
+            grad_A = self.__call__(B, output_grad, True, False)
+            grad_B = self.__call__(output_grad, A, , )
+
+            grad_A = self.__call__(B, output_grad, , )
+            grad_B = self.__call__(output_grad, A, , )
+
+            grad_A = self.__call__(B, output_grad, , )
+            grad_B = self.__call__(output_grad, A, , )
+        #if trans_A and trans_B:
+        #    grad_A = self.__call__(B, output_grad)
+        #    grad_B = self.__call__(output_grad, A)
+            
+        return [grad_A, grad_B]
 
 
 class ZerosLikeOp(Op):
