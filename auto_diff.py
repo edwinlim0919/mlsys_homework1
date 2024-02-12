@@ -476,7 +476,7 @@ class Evaluator:
         """TODO: Your code here"""
 
         for key, val in input_values.items():
-            if not val.any():
+            if not val.size > 0:
                 raise ValueError('input node value not given')
 
         topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
