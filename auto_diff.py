@@ -163,10 +163,7 @@ class AddOp(Op):
 
     def compute(self, node: Node, input_values: List[np.ndarray]) -> np.ndarray:
         """Return the element-wise addition of input values."""
-        #print('AddOp compute FUCKYOU START')
-        print('AddOp compute len(input_values): ' + str(len(input_values)))
         assert len(input_values) == 2
-        #print('AddOp compute FUCKYOU END')
         return input_values[0] + input_values[1]
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
@@ -218,6 +215,14 @@ class MulOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of multiplication node, return partial adjoint to each input."""
         """TODO: Your code here"""
+        print('node: ' + str(node))
+        print('output_grad: ' + str(output_grad))
+        print('type(output_grad): ' + str(type(output_grad)))
+        print('output_grad.inputs: ' + str(output_grad.inputs))
+        print('output_grad.op: ' + str(output_grad.op))
+        print('output_grad.attrs: ' + str(output_grad.attrs))
+        #return [output_grad, output_grad]
+        return []
 
 
 class MulByConstOp(Op):
@@ -493,8 +498,6 @@ class Evaluator:
                                 curr_node_input_vals.append(val)
                 curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
                 input_values[curr_node] = curr_res
-
-        # TODO: check if all inputs have been found
 
         return [input_values[self.eval_nodes[0]]]
 
