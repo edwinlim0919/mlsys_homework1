@@ -456,16 +456,17 @@ class Evaluator:
         curr_eval_node_inputs = curr_eval_node.inputs
         for node_input in curr_eval_node_inputs:
             if str(node_input) in input_value_names:
+                print('NODE_INPUT (LEAF): ' + str(node_input))
                 eval_nodes_new_lhs.append(node_input)
             else:
-                node_input_nonleaf = node_input.inputs[0]
-                for child_node in node_input_nonleaf.inputs:
+                print('NODE_INPUT (NONLEAF): ' + str(node_input))
+                for child_node in node_input.inputs:
                     eval_nodes_new_rhs = eval_nodes_new_rhs + self.get_topological_sort(input_values, child_node)
-                eval_nodes_new_rhs.append(node_input_nonleaf)
+                #eval_nodes_new_rhs.append(node_input)
 
         print('GET_TOPOLOGICAL_SORT END')
         print()
-        return eval_nodes_new_lhs + eval_nodes_new_rhs
+        return eval_nodes_new_lhs + eval_nodes_new_rhs + [curr_eval_node]
 
     def run(self, input_values: Dict[Node, np.ndarray]) -> List[np.ndarray]:
         """Computes values of nodes in `eval_nodes` field with
