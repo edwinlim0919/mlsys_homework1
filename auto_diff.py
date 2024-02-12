@@ -439,46 +439,33 @@ class Evaluator:
         """
         self.eval_nodes = eval_nodes
 
-    def get_topological_sort(self, input_values: Dict[Node, np.ndarray], curr_eval_nodes: List[Node]) -> List[Node]:
+    def get_topological_sort(self, input_values: Dict[Node, np.ndarray], curr_eval_node: Node) -> List[Node]:
         print('GET_TOPOLOGICAL_SORT START')
-        print('CURR_EVAL_NODES: ' + str(curr_eval_nodes))
-        if not curr_eval_nodes:
-            return []
-        
+        print('curr_eval_node: ' + str(curr_eval_node))
+
+        if not curr_eval_node.inputs:
+            return [curr_eval_node]
+
         input_value_names = []
         for key, val in input_values.items():
             input_value_names.append(str(key))
 
         # Topological sort
-        eval_nodes_new = []
-        #result_node = self.eval_nodes[0]
-        #result_node_inputs = result_node.inputs
-        result_node = curr_eval_nodes[0]
-        result_node_inputs = result_node.inputs
-        for node_input in result_node_inputs:
+        eval_nodes_new_lhs = []
+        eval_nodes_new_rhs = []
+        curr_eval_node_inputs = curr_eval_node.inputs
+        for node_input in curr_eval_node_inputs:
             if str(node_input) in input_value_names:
-                eval_nodes_new.append(node_input)
+                eval_nodes_new_lhs.append(node_input)
             else:
                 node_input_nonleaf = node_input.inputs[0]
-                print('OUT: ' + str(node_input_nonleaf))
-                print('TYPE: ' + str(type(node_input_nonleaf)))
-                print('key: ' + str(node_input_nonleaf))
-                print('key node: ' + str(node_input_nonleaf))
-                print('inputs: ' + str(node_input_nonleaf.inputs))
-                print('op: ' + str(node_input_nonleaf.op))
-                print('attrs: ' + str(node_input_nonleaf.attrs))
-                print('name: ' + str(node_input_nonleaf.name))
-                print('input_values: ' + str(input_values))
-                print()
                 for child_node in node_input_nonleaf.inputs:
-                    # Remove any added nodes
-                    new_curr_eval_nodes = [child_node]
-                    eval_nodes_new = eval_nodes_new + self.get_topological_sort(input_values, new_curr_eval_nodes)
-                    #eval_nodes_new = eval_nodes_new + self.get_topological_sort(input_values, curr_eval_nodes[1:])
+                    eval_nodes_new_rhs = eval_nodes_new_rhs + self.get_topological_sort(input_values, child_node)
+                eval_nodes_new_rhs.append(node_input_nonleaf)
 
         print('GET_TOPOLOGICAL_SORT END')
         print()
-        return eval_nodes_new
+        return eval_nodes_new_lhs + eval_nodes_new_rhs
 
     def run(self, input_values: Dict[Node, np.ndarray]) -> List[np.ndarray]:
         """Computes values of nodes in `eval_nodes` field with
@@ -499,7 +486,7 @@ class Evaluator:
         """
         """TODO: Your code here"""
 
-        topological_sort = self.get_topological_sort(input_values, self.eval_nodes)
+        topological_sort = self.get_topological_sort(input_values, self.eval_nodes[0])
         print('TOPOLOGICAL_SORT: ' + str(topological_sort))
 
         print('Evaluator run START')
