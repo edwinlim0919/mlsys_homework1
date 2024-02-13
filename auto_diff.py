@@ -511,52 +511,31 @@ class Evaluator:
             if not val.size > 0:
                 raise ValueError('input node value not given')
 
-        print('RUN START')
-        print('EVAL_NODES START')
         for node in self.eval_nodes:
             print(node)
-        print('EVAL_NODES END')
-        print('INPUT_VALUES: ' + str(input_values) + '\n')
 
         results_all_eval_nodes = []
         for i in range(len(self.eval_nodes)):
             curr_eval_nodes = self.eval_nodes[i]
             topological_sort = self.get_topological_sort(input_values, curr_eval_nodes)
 
-            print('CURR_EVAL_NODES: ' + str(curr_eval_nodes))
-            print('topological_sort: ' + str(topological_sort))
-
             for curr_node in topological_sort:
                 if curr_node.inputs:
-                    print('curr_node.inputs: ' + str(curr_node.inputs))
                     curr_node_input_vals = []
-                    #already_added = []
 
                     for curr_node_inp in curr_node.inputs:
-
-                        # dedup input_values
-
                         for key, val in input_values.items():
                             if str(curr_node_inp) == str(key):
-                                #if str(key) not in already_added or len(curr_node_input_vals) < 2:
-                                print('key: ' + str(key))
-                                print('val: ' + str(val))
                                 if type(val) == list:
                                     curr_node_input_vals = curr_node_input_vals + val
                                 else:
                                     curr_node_input_vals.append(val)
                                 break
-                                #already_added.append(str(key))
-                        print()
 
-                    print('curr_node: ' + str(curr_node))
-                    print('curr_node_input_vals: ' + str(curr_node_input_vals) + str('\n'))
                     curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
                     input_values[curr_node] = curr_res
 
             results_all_eval_nodes.append(input_values[curr_eval_nodes])
-
-        print('RUN END\n\n')
 
         return results_all_eval_nodes
 
@@ -572,7 +551,6 @@ def get_topo_sort_grad(output_node: Node) -> List[Node]:
         for node in recur:
             if node not in curr_topo_list:
                 curr_topo_list.append(node)
-        #curr_topo_list = curr_topo_list + get_topo_sort_grad(node_input)
     if output_node not in curr_topo_list:
         curr_topo_list.append(output_node)
 
@@ -598,19 +576,6 @@ def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
     """
 
     """TODO: Your code here"""
-    print('GRADIENTS START')
-    print('output_node: ' + str(output_node))
-    print('inputs: ' + str(output_node.inputs))
-    print('op: ' + str(output_node.op))
-    print('attrs: ' + str(output_node.attrs))
-    print()
-    for node in nodes:
-        print('node: ' + str(node))
-        print('inputs: ' + str(node.inputs))
-        print('op: ' + str(node.op))
-        print('attrs: ' + str(node.attrs))
-        print()
-
     topological_sort = get_topo_sort_grad(output_node)
     topological_sort.reverse()
  
@@ -638,8 +603,5 @@ def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
             for v_ij in grads[1:]:
                 v_i = v_i + v_ij
         result.append(v_i)
-
-    print('RESULT: ' + str(result))
-    print('GRADIENTS END\n\n')
 
     return result
