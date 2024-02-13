@@ -165,6 +165,10 @@ class AddOp(Op):
         """Return the element-wise addition of input values."""
         assert len(input_values) == 2
         return input_values[0] + input_values[1]
+        #curr_sum = input_values[0] + input_values[1]
+        #if len(input_values) > 2:
+        #    for inp in input_values[2:]:
+        #        curr_sum = curr_sum + inp
 
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of add node, return partial adjoint to each input."""
@@ -470,15 +474,17 @@ class Evaluator:
         if not curr_eval_node.inputs:
             return [curr_eval_node]
 
-        input_value_names = []
-        for key, val in input_values.items():
-            input_value_names.append(str(key))
-
         curr_topo_list = []
         curr_eval_node_inputs = curr_eval_node.inputs
         for node_input in curr_eval_node_inputs:
-            curr_topo_list = curr_topo_list + self.get_topological_sort(input_values, node_input)
-        curr_topo_list.append(curr_eval_node)
+            # check duplicates
+            recur = self.get_topological_sort(input_values, node_input)
+            for node in recur:
+                if node not in curr_topo_list:
+                    curr_topo_list.append(node)
+            #curr_topo_list = curr_topo_list + self.get_topological_sort(input_values, node_input)
+        if curr_eval_node not in curr_topo_list:
+            curr_topo_list.append(curr_eval_node)
 
         return curr_topo_list
 
@@ -505,25 +511,52 @@ class Evaluator:
             if not val.size > 0:
                 raise ValueError('input node value not given')
 
+        print('RUN START')
+        print('EVAL_NODES START')
+        for node in self.eval_nodes:
+            print(node)
+        print('EVAL_NODES END')
+        print('INPUT_VALUES: ' + str(input_values) + '\n')
+
         results_all_eval_nodes = []
         for i in range(len(self.eval_nodes)):
             curr_eval_nodes = self.eval_nodes[i]
             topological_sort = self.get_topological_sort(input_values, curr_eval_nodes)
 
+            print('CURR_EVAL_NODES: ' + str(curr_eval_nodes))
+            print('topological_sort: ' + str(topological_sort))
+
             for curr_node in topological_sort:
                 if curr_node.inputs:
+                    print('curr_node.inputs: ' + str(curr_node.inputs))
                     curr_node_input_vals = []
+                    #already_added = []
+
                     for curr_node_inp in curr_node.inputs:
+
+                        # dedup input_values
+
                         for key, val in input_values.items():
                             if str(curr_node_inp) == str(key):
+                                #if str(key) not in already_added or len(curr_node_input_vals) < 2:
+                                print('key: ' + str(key))
+                                print('val: ' + str(val))
                                 if type(val) == list:
                                     curr_node_input_vals = curr_node_input_vals + val
                                 else:
                                     curr_node_input_vals.append(val)
+                                break
+                                #already_added.append(str(key))
+                        print()
+
+                    print('curr_node: ' + str(curr_node))
+                    print('curr_node_input_vals: ' + str(curr_node_input_vals) + str('\n'))
                     curr_res = curr_node.op.compute(curr_node, curr_node_input_vals)
                     input_values[curr_node] = curr_res
 
             results_all_eval_nodes.append(input_values[curr_eval_nodes])
+
+        print('RUN END\n\n')
 
         return results_all_eval_nodes
 
@@ -534,8 +567,14 @@ def get_topo_sort_grad(output_node: Node) -> List[Node]:
 
     curr_topo_list = []
     for node_input in output_node.inputs:
-        curr_topo_list = curr_topo_list + get_topo_sort_grad(node_input)
-    curr_topo_list.append(output_node)
+        # check dup
+        recur = get_topo_sort_grad(node_input)
+        for node in recur:
+            if node not in curr_topo_list:
+                curr_topo_list.append(node)
+        #curr_topo_list = curr_topo_list + get_topo_sort_grad(node_input)
+    if output_node not in curr_topo_list:
+        curr_topo_list.append(output_node)
 
     return curr_topo_list
 
@@ -564,62 +603,43 @@ def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
     print('inputs: ' + str(output_node.inputs))
     print('op: ' + str(output_node.op))
     print('attrs: ' + str(output_node.attrs))
-    print('\n')
+    print()
     for node in nodes:
         print('node: ' + str(node))
         print('inputs: ' + str(node.inputs))
         print('op: ' + str(node.op))
         print('attrs: ' + str(node.attrs))
-        print('\n')
+        print()
 
     topological_sort = get_topo_sort_grad(output_node)
-    print('topological_sort: ' + str(topological_sort) + '\n')
     topological_sort.reverse()
-    print('reversed: ' + str(topological_sort) + '\n')
-
+ 
     node_to_grad = {output_node: [ones_like(output_node)]}
-    print('node_to_grad START: '  + str(node_to_grad) + '\n')
-
     for node in topological_sort:
-        print('node: ' + str(node))
         grads = node_to_grad[node]
-        print('grads' + str(grads))
         v_i = grads[0]
         if len(grads) > 0:
             for v_ij in grads[1:]:
                 v_i = v_i + v_ij
-        print('v_i:' + str(v_i))
 
         if node.inputs:
             v_ki = node.op.gradient(node, v_i)
-            #for inp_node in node.inputs:
             for i in range(len(node.inputs)):
                 inp_node = node.inputs[i]
-                print('inp_node: ' + str(inp_node))
-                #v_ki = node.op.gradient(node, v_i)
                 if inp_node not in node_to_grad:
                     node_to_grad[inp_node] = []
                 node_to_grad[inp_node].append(v_ki[i])
-                #node_to_grad[inp_node] = node_to_grad[inp_node] + v_ki
-            print('node_to_grad CURR: ' + str(node_to_grad))
-            print()
-
-    print('node_to_grad END: '  + str(node_to_grad) + '\n')
 
     result = []
     for node in nodes:
-        print('NODE: ' + str(node))
         grads = node_to_grad[node]
-        print('GRADS: ' + str(grads))
         v_i = grads[0]
         if len(grads) > 0:
             for v_ij in grads[1:]:
                 v_i = v_i + v_ij
-        print('v_i: ' + str(v_i))
         result.append(v_i)
-        #result.append(node_to_grad[node])
-        print()
 
     print('RESULT: ' + str(result))
-    print('GRADIENTS END')
+    print('GRADIENTS END\n\n')
+
     return result
