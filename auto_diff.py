@@ -274,7 +274,6 @@ class DivOp(Op):
     def gradient(self, node: Node, output_grad: Node) -> List[Node]:
         """Given gradient of division node, return partial adjoint to each input."""
         """TODO: Your code here"""
-        #return [output_grad/node.inputs[1], output_grad/node.inputs[0]]
         return [output_grad/node.inputs[1], (-1 * node.inputs[0] / (node.inputs[1] * node.inputs[1])) * output_grad]
 
 
@@ -368,12 +367,7 @@ class MatMulOp(Op):
         if trans_B:
             B = B.T
 
-        print('A: ' + str(A))
-        print('B: ' + str(B))
-
         if A.shape[1] != B.shape[0]:
-            print('A.shape: ' + str(A.shape))
-            print('B.shape: ' + str(B.shape))
             raise ValueError('incompatible matrix sizes')
         result = np.matmul(A, B)
         return result
@@ -390,22 +384,6 @@ class MatMulOp(Op):
         - You may want to look up some materials for the gradients of matmul.
         """
         """TODO: Your code here"""
-        print('node: ' + str(node))
-        print('inputs: ' + str(node.inputs))
-        for inp in node.inputs:
-            print('INP: ' + str(inp))
-            print('inputs: ' + str(inp.inputs))
-            print('op: ' + str(inp.op))
-            print('attrs: ' + str(inp.attrs))
-        #print('type(node.inputs[0]): '  + str(type(node.inputs[0])))
-        print()
-        print('output_grad: ' + str(output_grad))
-        print('type(output_grad): ' + str(type(output_grad)))
-        print('inputs: ' + str(output_grad.inputs))
-        print('op: ' + str(output_grad.op))
-        print('attrs: ' + str(output_grad.attrs))
-        print()
-
         A, B = node.inputs
         trans_A = node.__getattr__('trans_A')
         trans_B = node.__getattr__('trans_B')
@@ -547,10 +525,19 @@ class Evaluator:
 
             results_all_eval_nodes.append(input_values[curr_eval_nodes])
 
-        #return [input_values[curr_eval_nodes]]
-        #if len(results_all_eval_nodes) == 1:
-        #    return results_all_eval_nodes[0]
         return results_all_eval_nodes
+
+
+def get_topo_sort_grad(output_node: Node) -> List[Node]:
+    if not output_node.inputs:
+        return [output_node]
+
+    curr_topo_list = []
+    for node_input in output_node.inputs:
+        curr_topo_list = curr_topo_list + get_topo_sort_grad(node_input)
+    curr_topo_list.append(output_node)
+
+    return curr_topo_list
 
 def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
     """Construct the backward computational graph, which takes gradient
@@ -572,3 +559,67 @@ def gradients(output_node: Node, nodes: List[Node]) -> List[Node]:
     """
 
     """TODO: Your code here"""
+    print('GRADIENTS START')
+    print('output_node: ' + str(output_node))
+    print('inputs: ' + str(output_node.inputs))
+    print('op: ' + str(output_node.op))
+    print('attrs: ' + str(output_node.attrs))
+    print('\n')
+    for node in nodes:
+        print('node: ' + str(node))
+        print('inputs: ' + str(node.inputs))
+        print('op: ' + str(node.op))
+        print('attrs: ' + str(node.attrs))
+        print('\n')
+
+    topological_sort = get_topo_sort_grad(output_node)
+    print('topological_sort: ' + str(topological_sort) + '\n')
+    topological_sort.reverse()
+    print('reversed: ' + str(topological_sort) + '\n')
+
+    node_to_grad = {output_node: [ones_like(output_node)]}
+    print('node_to_grad START: '  + str(node_to_grad) + '\n')
+
+    for node in topological_sort:
+        print('node: ' + str(node))
+        grads = node_to_grad[node]
+        print('grads' + str(grads))
+        v_i = grads[0]
+        if len(grads) > 0:
+            for v_ij in grads[1:]:
+                v_i = v_i + v_ij
+        print('v_i:' + str(v_i))
+
+        if node.inputs:
+            v_ki = node.op.gradient(node, v_i)
+            #for inp_node in node.inputs:
+            for i in range(len(node.inputs)):
+                inp_node = node.inputs[i]
+                print('inp_node: ' + str(inp_node))
+                #v_ki = node.op.gradient(node, v_i)
+                if inp_node not in node_to_grad:
+                    node_to_grad[inp_node] = []
+                node_to_grad[inp_node].append(v_ki[i])
+                #node_to_grad[inp_node] = node_to_grad[inp_node] + v_ki
+            print('node_to_grad CURR: ' + str(node_to_grad))
+            print()
+
+    print('node_to_grad END: '  + str(node_to_grad) + '\n')
+
+    result = []
+    for node in nodes:
+        print('NODE: ' + str(node))
+        grads = node_to_grad[node]
+        print('GRADS: ' + str(grads))
+        v_i = grads[0]
+        if len(grads) > 0:
+            for v_ij in grads[1:]:
+                v_i = v_i + v_ij
+        print('v_i: ' + str(v_i))
+        result.append(v_i)
+        #result.append(node_to_grad[node])
+        print()
+
+    print('RESULT: ' + str(result))
+    print('GRADIENTS END')
+    return result
